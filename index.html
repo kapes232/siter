@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Canvas</title>
+  </head>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      background-color: magenta;
+    }
+    .overlay {
+      position: fixed;
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      background-color: #003f009f;
+      color: blanchedalmond;
+      user-select: none;
+    }
+    .overlayText {
+      position: relative;
+      background-color: #00ffff3f;
+      top: 33%;
+      font-weight: bold;
+      font-size: 72px;
+      text-align: center;
+      font-family: "Trebuchet MS";
+    }
+  </style>
+  <body>
+    <div class="overlay"><p class="overlayText">I N I C I A R</p></div>
+    <canvas class="canvas">
+      <p class="overlay">Add suitable fallback here.</p>
+    </canvas>
+  </body>
+  <script>
+    const overlay = document.querySelector(".overlay");
+    const canvas = document.querySelector(".canvas");
+    const width = (canvas.width = window.innerWidth);
+    const height = (canvas.height = window.innerHeight);
+    const ctx = canvas.getContext("2d");
+    var mxy = { x: 0, y: 0 };
+    var pause = true;
+
+    //document.addEventListener('keydown', (e) => {console.log(e.key); if (e.key == "Escape") { overlay.style.display = "block"; pause = true; } });
+    document.addEventListener("keydown", (e) => {
+      /*console.log(e.key);*/ if (e.key == "Escape") switchPause();
+    });
+    //overlay.addEventListener('click', (e) => { overlay.style.display = "none"; pause = false; });
+    overlay.addEventListener("click", (e) => switchPause());
+    canvas.addEventListener("mousemove", updateMxy.bind(this));
+    canvas.addEventListener("mouseenter", updateMxy.bind(this));
+
+    loop();
+
+    function switchPause() {
+      pause = !pause;
+      overlay.style.display = pause ? "block" : "none";
+    }
+    function updateMxy(e) {
+      let r = canvas.getBoundingClientRect();
+      mxy.x = e.clientX - r.left;
+      mxy.y = e.clientY - r.top;
+    }
+
+    function drawPolyneer() {
+      ctx.fillStyle = "rgb(64, 64, 222)";
+      ctx.fillRect(50, 50, 150, 150);
+      ctx.fillStyle = "rgb(64, 222, 64, 0.75)";
+      ctx.fillRect(150, 150, 100, 100);
+
+      ctx.lineWidth = 5;
+      ctx.strokeStyle = "rgb(222, 64, 64, 0.33)";
+      ctx.strokeRect(50, 50, 200, 200);
+
+      ctx.fillStyle = "rgb(255, 255, 0, .4)";
+      ctx.beginPath();
+      ctx.moveTo(70, 70);
+      ctx.lineTo(200, 150);
+      ctx.lineTo(150, 200);
+      // draw your path
+      ctx.fill();
+
+      ctx.fillStyle = "rgb(255, 255, 255, .8)";
+      ctx.beginPath();
+      ctx.moveTo(50, 50);
+      ctx.lineTo(150, 50);
+      let triHeight = 50 * Math.tan(degToRad(60));
+      ctx.lineTo(100, 50 + triHeight);
+      ctx.lineTo(50, 50);
+      ctx.fill();
+    }
+    function degToRad(degrees) {
+      return (degrees * Math.PI) / 180;
+    }
+
+    function loop(e) {
+      if (pause) return;
+      //ctx.clearRect(0, 0, width, height);
+      ctx.fillStyle = "#222";
+      ctx.fillRect(0, 0, width, height);
+      //ctx.shadowBlur = 0;
+      drawPolyneer();
+      drawXip(300, 300, mxy.x, mxy.y);
+      requestAnimationFrame(loop);
+    }
+
+    function drawXip(x, y, lookx, looky) {
+      ctx.setTransform(1, 0, 0, 1, x, y); // set scale and origin
+      ctx.rotate(Math.atan2(looky - y, lookx - x)); // set angle
+      ctx.shadowBlur = 8;
+      ctx.shadowColor = "blue";
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "rgb(222, 222, 222, 0.99)";
+
+      ctx.beginPath();
+      ctx.moveTo(-8, -7);
+      ctx.lineTo(8, 0);
+      ctx.lineTo(-8, 7);
+      //ctx.lineTo(-8, -7);
+      ctx.closePath();
+      ctx.stroke();
+
+      ctx.shadowBlur = 0;
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = "rgb(255, 22, 22, 0.66)";
+      ctx.beginPath();
+      ctx.moveTo(8, 0); // aquí se está calculando con la transformación anterior
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // restore default
+      ctx.lineTo(lookx, looky); // aquí ya son coordenadas directas porque acabo de resetear la transformación, de esta forma tenemos ambos puntos donde queríamos
+      ctx.stroke();
+    }
+  </script>
+</html>
